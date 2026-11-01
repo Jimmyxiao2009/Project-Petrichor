@@ -1,0 +1,43 @@
+<base:MusicPage x:Class="Petrichor.App.Pages.ArtistPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:base="using:Petrichor.App">
+  <Grid Margin="12,8,12,0">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition />
+      </Grid.ColumnDefinitions>
+      <Border Width="100" Height="100" Background="{ThemeResource SurfaceAlt}" CornerRadius="2">
+        <Image x:Name="Cover" Stretch="UniformToFill" />
+      </Border>
+      <StackPanel Grid.Column="1" Margin="12,0,0,0">
+        <TextBlock x:Name="Title" FontSize="20" FontFamily="Segoe UI Semilight" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis" />
+        <TextBlock x:Name="Subtitle" Foreground="{ThemeResource SecondaryText}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0" />
+      </StackPanel>
+    </Grid>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,4">
+      <Button Click="PlayAll" Style="{StaticResource AccentButton}" Margin="0,0,8,0">
+        <base:IconLabel Glyph="&#xE768;" Text="热门歌曲" />
+      </Button>
+      <Button Click="SaveClick" Style="{StaticResource MetroButton}">
+        <base:IconLabel Glyph="&#xE734;" Text="收藏歌手" />
+      </Button>
+    </StackPanel>
+    <Pivot Grid.Row="2" Style="{StaticResource SubPivot}">
+      <PivotItem Header="热门">
+        <ListView x:Name="Tracks" ItemTemplate="{StaticResource MusicRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="TrackClick" />
+      </PivotItem>
+      <PivotItem Header="专辑">
+        <ListView x:Name="Albums" ItemTemplate="{StaticResource MusicRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="AlbumClick" />
+      </PivotItem>
+      <PivotItem Header="简介">
+        <ScrollViewer>
+          <TextBlock x:Name="Biography" TextWrapping="Wrap" FontSize="14" LineHeight="24" Margin="0,4,0,16" Foreground="{ThemeResource SecondaryText}" />
+        </ScrollViewer>
+      </PivotItem>
+    </Pivot>
+  </Grid>
+</base:MusicPage>

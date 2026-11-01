@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+ <PropertyGroup>
+  <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration><Platform Condition="'$(Platform)' == ''">x86</Platform>
+  <PlatformTarget>$(Platform)</PlatformTarget><ProjectGuid>{75F9E054-7A91-4A26-B8A3-4C68EA164A61}</ProjectGuid><OutputType>AppContainerExe</OutputType>
+  <RootNamespace>Petrichor.App</RootNamespace><AssemblyName>Petrichor.App</AssemblyName><DefaultLanguage>zh-CN</DefaultLanguage>
+  <ProjectTypeGuids>{BC8A1FFA-BEE3-4634-8014-F334798102B3};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier><TargetPlatformVersion>10.0.15063.0</TargetPlatformVersion><TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
+  <RuntimeIdentifiers>win10;win10-x86;win10-x64;win10-arm;win10-x86-aot;win10-x64-aot;win10-arm-aot</RuntimeIdentifiers><MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion><LangVersion>7.3</LangVersion><AppxPackageSigningEnabled>false</AppxPackageSigningEnabled><AppxAutoIncrementPackageRevision>false</AppxAutoIncrementPackageRevision><AppxBundle>Never</AppxBundle>
+  <WindowsKitsXamlCompilerTargetsPath>$(MSBuildProgramFiles32)\Windows Kits\10\bin\$(TargetPlatformVersion)\XamlCompiler\Microsoft.Windows.UI.Xaml.Common.targets</WindowsKitsXamlCompilerTargetsPath>
+ </PropertyGroup>
+ <PropertyGroup Condition="'$(Configuration)' == 'Debug'"><DebugSymbols>true</DebugSymbols><DebugType>full</DebugType><Optimize>false</Optimize><OutputPath>bin\$(Platform)\Debug\</OutputPath><DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants><UseDotNetNativeToolchain>false</UseDotNetNativeToolchain></PropertyGroup>
+ <PropertyGroup Condition="'$(Configuration)' == 'Release'"><DebugType>pdbonly</DebugType><Optimize>true</Optimize><OutputPath>bin\$(Platform)\Release\</OutputPath><DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants><UseDotNetNativeToolchain>true</UseDotNetNativeToolchain></PropertyGroup>
+ <ItemGroup><Compile Include="**\*.cs" Exclude="bin\**;obj\**"><DependentUpon Condition="Exists('%(RootDir)%(Directory)%(Filename)')">%(Filename)</DependentUpon></Compile><ApplicationDefinition Include="App.xaml" /><Page Include="Shell.xaml" /><Page Include="Pages\*.xaml" /><Page Include="Controls\*.xaml" /><AppxManifest Include="Package.appxmanifest" /><Content Include="Assets\*.png" /><Content Include="Properties\Default.rd.xml" /></ItemGroup>
+ <ItemGroup><Reference Include="Windows"><HintPath>$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\$(TargetPlatformVersion)\Windows.winmd</HintPath><Private>false</Private></Reference></ItemGroup>
+ <ItemGroup><ProjectReference Include="..\Petrichor.Core\Petrichor.Core.csproj"><Project>{3B8D2524-C175-450A-B125-A3976EB405C9}</Project><Name>Petrichor.Core</Name><AdditionalProperties>Platform=AnyCPU</AdditionalProperties></ProjectReference><ProjectReference Include="..\Petrichor.Uwp\Petrichor.Uwp.csproj"><Project>{9C45954E-6F88-4986-96F6-F245437DB487}</Project><Name>Petrichor.Uwp</Name><AdditionalProperties>Platform=AnyCPU</AdditionalProperties></ProjectReference></ItemGroup>
+ <ItemGroup><PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.14" /><PackageReference Include="Newtonsoft.Json" Version="13.0.3" /><PackageReference Include="QRCoder" Version="1.4.3" /></ItemGroup>
+ <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+</Project>
+
+
+
+

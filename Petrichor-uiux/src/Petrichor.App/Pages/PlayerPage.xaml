@@ -1,0 +1,30 @@
+<base:MusicPage x:Class="Petrichor.App.Pages.PlayerPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:base="using:Petrichor.App">
+<base:MusicPage.Resources>
+ <ControlTemplate x:Key="CirclePlayTemplate" TargetType="Button">
+  <Border CornerRadius="32" Background="{StaticResource PetrichorAccent}">
+   <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+  </Border>
+ </ControlTemplate>
+</base:MusicPage.Resources>
+<Grid Margin="12,8,12,8"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+<StackPanel><TextBlock x:Name="Title" Text="音乐，等你按下播放" FontSize="20" FontFamily="Segoe UI Semilight" TextTrimming="CharacterEllipsis"/><Button x:Name="Artist" Content="从搜索中选择一首歌曲" Click="ArtistClick" Style="{StaticResource TextButton}" MinHeight="32" Padding="0,4" Foreground="{ThemeResource SecondaryText}"/></StackPanel>
+<Grid Grid.Row="1" x:Name="CoverArea" Margin="0,8,0,8" SizeChanged="CoverAreaSizeChanged"><Border x:Name="CoverFrame" Background="{ThemeResource SurfaceAlt}" CornerRadius="4" HorizontalAlignment="Center" VerticalAlignment="Center"><Image x:Name="Cover" Source="ms-appx:///Assets/Forest.png" Stretch="UniformToFill"/></Border></Grid>
+<StackPanel Grid.Row="2"><Button x:Name="AlbumButton" Content="专辑" Click="AlbumClick" Style="{StaticResource TextButton}" MinHeight="32" Padding="0,4" Foreground="{ThemeResource SecondaryText}"/><Slider x:Name="Progress" Minimum="0" Maximum="1" ValueChanged="SeekChanged" AutomationProperties.Name="播放进度"/><Grid Margin="0,-4,0,0"><TextBlock x:Name="Elapsed" Text="00:00" FontSize="12" Foreground="{ThemeResource SecondaryText}"/><TextBlock x:Name="Status" Foreground="{ThemeResource SecondaryText}" FontSize="12" HorizontalAlignment="Center"/><TextBlock x:Name="Duration" Text="00:00" FontSize="12" HorizontalAlignment="Right" Foreground="{ThemeResource SecondaryText}"/></Grid></StackPanel>
+<Grid Grid.Row="3" Margin="0,8"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+<Button x:Name="Repeat" Click="RepeatClick" Style="{StaticResource IconButton}" AutomationProperties.Name="循环模式" ToolTipService.ToolTip="循环模式"><FontIcon x:Name="RepeatGlyph" Glyph="&#xE8EE;" FontSize="18"/></Button>
+<Button Grid.Column="1" Click="PreviousClick" Style="{StaticResource IconButton}" AutomationProperties.Name="上一首" ToolTipService.ToolTip="上一首"><FontIcon Glyph="&#xE892;" FontSize="22"/></Button>
+<Button Grid.Column="2" x:Name="Play" Click="PlayClick" Template="{StaticResource CirclePlayTemplate}" Width="64" Height="64" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" AutomationProperties.Name="播放或暂停"><FontIcon x:Name="PlayGlyph" Glyph="&#xE768;" FontSize="26" Foreground="White"/></Button>
+<Button Grid.Column="3" Click="NextClick" Style="{StaticResource IconButton}" AutomationProperties.Name="下一首" ToolTipService.ToolTip="下一首"><FontIcon Glyph="&#xE893;" FontSize="22"/></Button>
+<Button Grid.Column="4" x:Name="Shuffle" Click="ShuffleClick" Style="{StaticResource IconButton}" AutomationProperties.Name="随机播放" ToolTipService.ToolTip="随机播放"><FontIcon x:Name="ShuffleGlyph" Glyph="&#xE8B1;" FontSize="18"/></Button></Grid>
+<Grid Grid.Row="4"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+<Button Click="LyricsClick" Style="{StaticResource IconButton}" AutomationProperties.Name="歌词" ToolTipService.ToolTip="歌词"><FontIcon Glyph="&#xE8D2;" FontSize="20"/></Button>
+<Button Grid.Column="1" x:Name="Like" Click="LikeClick" Style="{StaticResource IconButton}" AutomationProperties.Name="喜欢" ToolTipService.ToolTip="喜欢"><FontIcon x:Name="LikeGlyph" Glyph="&#xEB51;" FontSize="20"/></Button>
+<Button Grid.Column="2" x:Name="SleepButton" Click="SleepClick" Style="{StaticResource IconButton}" AutomationProperties.Name="睡眠定时" ToolTipService.ToolTip="睡眠定时"><FontIcon x:Name="SleepGlyph" Glyph="&#xE708;" FontSize="20"/></Button>
+<Button Grid.Column="3" Click="QueueClick" Style="{StaticResource IconButton}" AutomationProperties.Name="队列" ToolTipService.ToolTip="队列"><FontIcon Glyph="&#xE8FD;" FontSize="20"/></Button>
+<Button Grid.Column="4" Style="{StaticResource IconButton}" AutomationProperties.Name="更多操作" ToolTipService.ToolTip="更多"><FontIcon Glyph="&#xE712;" FontSize="20"/>
+<Button.Flyout><MenuFlyout>
+<MenuFlyoutItem x:Name="Download" Text="下载" Click="DownloadClick"><MenuFlyoutItem.Icon><FontIcon Glyph="&#xE896;"/></MenuFlyoutItem.Icon></MenuFlyoutItem>
+<MenuFlyoutItem Text="收藏到歌单" Click="AddPlaylistClick"><MenuFlyoutItem.Icon><FontIcon Glyph="&#xE710;"/></MenuFlyoutItem.Icon></MenuFlyoutItem>
+<MenuFlyoutItem Text="评论" Click="CommentsClick"><MenuFlyoutItem.Icon><FontIcon Glyph="&#xE90A;"/></MenuFlyoutItem.Icon></MenuFlyoutItem>
+</MenuFlyout></Button.Flyout></Button></Grid>
+</Grid></base:MusicPage>

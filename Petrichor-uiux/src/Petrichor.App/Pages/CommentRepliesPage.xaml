@@ -1,0 +1,20 @@
+<base:MusicPage x:Class="Petrichor.App.Pages.CommentRepliesPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:base="using:Petrichor.App" xmlns:controls="using:Petrichor.App.Controls">
+<Grid Margin="12,8,12,8"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+<TextBlock Text="回复" Style="{StaticResource PageTitle}" Margin="0,0,0,4"/>
+<ListView Grid.Row="1" x:Name="Replies" SelectionMode="None" IsItemClickEnabled="True" ItemClick="ReplyClick" ItemTemplate="{StaticResource CommentTemplate}">
+ <ListView.Header>
+  <StackPanel>
+   <Border Background="{ThemeResource SurfaceAlt}" Padding="12,0,12,4" CornerRadius="2"><controls:CommentCard x:Name="Head"/></Border>
+   <TextBlock x:Name="ReplyTotal" Text="全部回复" FontSize="14" Margin="0,16,0,0"/>
+  </StackPanel>
+ </ListView.Header>
+ <ListView.Footer>
+  <StackPanel>
+   <Button x:Name="More" Click="MoreClick" Style="{StaticResource FooterButton}" Visibility="Collapsed"><base:IconLabel Glyph="&#xE70D;" Text="加载更多回复"/></Button>
+   <TextBlock x:Name="Empty" Foreground="{ThemeResource SecondaryText}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" Margin="24,32" Visibility="Collapsed"/>
+  </StackPanel>
+ </ListView.Footer>
+</ListView>
+<Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="ReplyStatus" Foreground="{ThemeResource SecondaryText}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/><Button x:Name="CancelReply" Grid.Column="1" Click="CancelReplyClick" Style="{StaticResource IconButton}" Width="40" Height="40" Margin="0,0,-4,0" AutomationProperties.Name="改为回复楼主" ToolTipService.ToolTip="改为回复楼主" Visibility="Collapsed"><FontIcon Glyph="&#xE711;" FontSize="14"/></Button></Grid>
+<Grid Grid.Row="3" Margin="0,4,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="Composer" MinHeight="40" Padding="10,9,6,6" MaxLength="1000" AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="100" VerticalAlignment="Bottom" AutomationProperties.Name="回复内容"/><Button Grid.Column="1" x:Name="Send" Click="SendClick" Style="{StaticResource IconButton}" Margin="4,0,-4,0" VerticalAlignment="Bottom" AutomationProperties.Name="发送回复" ToolTipService.ToolTip="发送"><FontIcon Glyph="&#xE724;" FontSize="20"/></Button></Grid>
+</Grid></base:MusicPage>

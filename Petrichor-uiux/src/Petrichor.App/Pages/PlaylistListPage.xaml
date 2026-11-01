@@ -1,0 +1,22 @@
+<base:MusicPage x:Class="Petrichor.App.Pages.PlaylistListPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:base="using:Petrichor.App">
+  <Grid Margin="12,8,12,8">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock x:Name="Title" Text="歌单" Style="{StaticResource PageTitle}" />
+    <ComboBox Grid.Row="1" x:Name="Category" SelectedIndex="0" SelectionChanged="CategoryChanged" Margin="0,0,0,16" HorizontalAlignment="Stretch" AutomationProperties.Name="歌单分类">
+      <ComboBoxItem Content="全部" />
+      <ComboBoxItem Content="华语" />
+      <ComboBoxItem Content="轻音乐" />
+      <ComboBoxItem Content="后摇" />
+      <ComboBoxItem Content="夜晚" />
+    </ComboBox>
+    <GridView Grid.Row="2" x:Name="Items" Margin="0,0,-12,0" ItemTemplate="{StaticResource CoverTemplate}" ItemContainerStyle="{StaticResource CoverItemStyle}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PlaylistClick" />
+    <Button Grid.Row="3" x:Name="More" Style="{StaticResource FooterButton}" Click="MoreClick">
+      <base:IconLabel Glyph="&#xE70D;" Text="加载更多" />
+    </Button>
+  </Grid>
+</base:MusicPage>

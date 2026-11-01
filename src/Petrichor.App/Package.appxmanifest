@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" IgnorableNamespaces="uap uap3 mp">
+ <Identity Name="Petrichor.Music" Publisher="CN=Petrichor.Development" Version="0.3.3.1" />
+ <mp:PhoneIdentity PhoneProductId="75f9e054-7a91-4a26-b8a3-4c68ea164a61" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+ <Properties><DisplayName>雨声 · Petrichor</DisplayName><PublisherDisplayName>Petrichor</PublisherDisplayName><Logo>Assets\StoreLogo.png</Logo></Properties>
+ <Dependencies><TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.15063.0" MaxVersionTested="10.0.15063.0" /></Dependencies>
+ <Resources><Resource Language="zh-cn" /></Resources>
+ <Applications><Application Id="Music" Executable="$targetnametoken$.exe" EntryPoint="Petrichor.App.App"><uap:VisualElements DisplayName="雨声 · Petrichor" Description="为掌心里的 Windows，留一盏灯。" BackgroundColor="#0B0B0C" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png"><uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" /><uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#0B0B0C" /></uap:VisualElements><Extensions><uap:Extension Category="windows.protocol"><uap:Protocol Name="petrichor"><uap:DisplayName>雨声</uap:DisplayName></uap:Protocol></uap:Extension></Extensions></Application></Applications>
+ <Capabilities><Capability Name="internetClient" /><uap3:Capability Name="backgroundMediaPlayback" /></Capabilities>
+</Package>
+
+
+
+
+
+
+
+

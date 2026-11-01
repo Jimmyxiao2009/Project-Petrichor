@@ -1,0 +1,32 @@
+<UserControl x:Class="Petrichor.App.Controls.CommentCard" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <Grid Padding="0,12,0,8">
+  <Grid.ColumnDefinitions><ColumnDefinition Width="44"/><ColumnDefinition/></Grid.ColumnDefinitions>
+  <Ellipse Width="32" Height="32" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="{ThemeResource SurfaceAlt}"/>
+  <Ellipse Width="32" Height="32" HorizontalAlignment="Left" VerticalAlignment="Top"><Ellipse.Fill><ImageBrush ImageSource="{Binding Avatar}" Stretch="UniformToFill"/></Ellipse.Fill></Ellipse>
+  <StackPanel Grid.Column="1">
+   <Grid MinHeight="32">
+    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <StackPanel VerticalAlignment="Center">
+     <TextBlock Text="{Binding Nickname}" FontSize="13" Foreground="{ThemeResource SecondaryText}" TextTrimming="CharacterEllipsis"/>
+     <TextBlock Text="{Binding MetaText}" FontSize="12" Foreground="{ThemeResource SecondaryText}" Opacity="0.75" TextTrimming="CharacterEllipsis"/>
+    </StackPanel>
+    <Button Grid.Column="1" Click="LikeClick" Style="{StaticResource MetroButton}" MinWidth="48" MinHeight="40" Padding="8,0" Margin="0,-4,-8,0" VerticalAlignment="Top" AutomationProperties.Name="点赞" ToolTipService.ToolTip="点赞">
+     <StackPanel Orientation="Horizontal">
+      <TextBlock Text="{Binding LikeText}" FontSize="12" Foreground="{Binding LikeBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+      <FontIcon Glyph="{Binding LikeGlyph}" FontSize="14" Foreground="{Binding LikeBrush}" VerticalAlignment="Center"/>
+     </StackPanel>
+    </Button>
+   </Grid>
+   <TextBlock Text="{Binding Content}" FontSize="14" LineHeight="22" TextWrapping="Wrap" Margin="0,6,0,0"/>
+   <Border Visibility="{Binding RepliedVisibility}" BorderBrush="{ThemeResource Divider}" BorderThickness="2,0,0,0" Padding="10,2,0,2" Margin="0,8,0,0">
+    <TextBlock Text="{Binding RepliedText}" FontSize="12" LineHeight="18" Foreground="{ThemeResource SecondaryText}" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+   </Border>
+   <Button Visibility="{Binding ReplyVisibility}" Click="RepliesClick" Style="{StaticResource TextButton}" MinHeight="32" Padding="0,4" Margin="0,4,0,0" AutomationProperties.Name="查看回复">
+    <StackPanel Orientation="Horizontal">
+     <TextBlock Text="{Binding ReplyText}" FontSize="12" Foreground="{ThemeResource SystemControlForegroundAccentBrush}" VerticalAlignment="Center"/>
+     <FontIcon Glyph="&#xE76C;" FontSize="10" Margin="4,0,0,0" Foreground="{ThemeResource SystemControlForegroundAccentBrush}" VerticalAlignment="Center"/>
+    </StackPanel>
+   </Button>
+  </StackPanel>
+ </Grid>
+</UserControl>

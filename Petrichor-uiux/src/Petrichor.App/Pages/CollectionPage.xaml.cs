@@ -1,0 +1,16 @@
+using System;using System.Linq;using System.Collections.Generic;using System.Threading;using System.Threading.Tasks;using Petrichor.Core;using Windows.UI.Xaml;using Windows.UI.Xaml.Controls;using Windows.UI.Xaml.Navigation;using Windows.Storage;namespace Petrichor.App.Pages {public sealed partial class CollectionPage : MusicPage {public CollectionPage(){InitializeComponent();}
+private string kind;private List<long> ids;private readonly List<MusicItem> items=new List<MusicItem>();
+protected override async Task LoadAsync(object p){kind=p as string;Title.Text=kind=="artists"?"收藏歌手":kind=="albums"?"收藏专辑":"喜欢的音乐";if(kind=="likes")ids=await GetLikedIdsInOrderAsync();await FetchAsync();}
+// song/like/get 返回的 id 不按收藏时间排序；「我喜欢的音乐」歌单（specialType=5）的 trackIds 才与官方客户端顺序一致
+private async Task<List<long>> GetLikedIdsInOrderAsync(){
+ var me=App.Api.CurrentUser.Id;
+ var mine=(await App.Api.GetMyPlaylistsAsync(30,0,Token)).Where(x=>x.Creator?.Id==me).ToList();
+ var liked=mine.FirstOrDefault(x=>x.SpecialType==5)??mine.FirstOrDefault();
+ if(liked!=null){var detail=await App.Api.GetPlaylistAsync(liked.Id,Token);if(detail.TrackIds.Count>0)return detail.TrackIds;}
+ return await App.Api.GetLikedTrackIdsAsync(Token);
+}
+private async Task FetchAsync(){bool more;switch(kind){case "artists":var a=await App.Api.GetSavedArtistsAsync(30,items.Count,Token);items.AddRange(a.Items.Select(MusicItem.From));more=a.HasMore;break;case "albums":var b=await App.Api.GetSavedAlbumsAsync(30,items.Count,Token);items.AddRange(b.Items.Select(MusicItem.From));more=b.HasMore;break;default:var t=await App.Api.GetAllPlaylistTracksAsync(new Playlist{TrackIds=ids},Token);items.AddRange(t.Select(MusicItem.From));more=false;break;}Items.ItemsSource=items.ToList();More.Visibility=more?Visibility.Visible:Visibility.Collapsed;Status.Text=items.Count==0?"还没有收藏，去发现一些新音乐吧。":"";}
+private async void MoreClick(object s,RoutedEventArgs e)=>await ExecuteAsync(FetchAsync);
+private async void ResultClick(object s,ItemClickEventArgs e){var v=((MusicItem)e.ClickedItem).Value;if(v is Artist)Shell.Current.Navigate(typeof(ArtistPage),((Artist)v).Id);else if(v is Album)Shell.Current.Navigate(typeof(AlbumPage),((Album)v).Id);else await ExecuteAsync(()=>PlayTracksAsync(items.Select(i=>i.Value).OfType<Track>().ToList(),(Track)v));}}}
+
+

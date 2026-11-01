@@ -1,0 +1,31 @@
+<base:MusicPage x:Class="Petrichor.App.Pages.PodcastsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:base="using:Petrichor.App">
+ <Grid Margin="12,8,12,0">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
+  <TextBlock Text="播客" Style="{StaticResource PageTitle}" Margin="0,0,0,4"/>
+  <Pivot Grid.Row="1" x:Name="Feeds" Style="{StaticResource SubPivot}" SelectionChanged="FeedChanged">
+   <PivotItem Header="热门">
+    <Grid>
+     <ListView x:Name="Hot" ItemTemplate="{StaticResource PodcastRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PodcastClick">
+      <ListView.Footer><Button x:Name="HotMore" Click="HotMoreClick" Style="{StaticResource FooterButton}" Visibility="Collapsed"><base:IconLabel Glyph="&#xE70D;" Text="加载更多"/></Button></ListView.Footer>
+     </ListView>
+     <StackPanel x:Name="HotEmpty" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" Margin="24,0">
+      <FontIcon Glyph="&#xE720;" FontSize="40" Foreground="{ThemeResource SecondaryText}"/>
+      <TextBlock x:Name="HotEmptyText" Text="播客即将上线" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" Foreground="{ThemeResource SecondaryText}" Margin="0,12,0,0"/>
+     </StackPanel>
+    </Grid>
+   </PivotItem>
+   <PivotItem Header="我的订阅">
+    <Grid>
+     <ListView x:Name="Subscribed" ItemTemplate="{StaticResource PodcastRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PodcastClick">
+      <ListView.Footer><Button x:Name="SubscribedMore" Click="SubscribedMoreClick" Style="{StaticResource FooterButton}" Visibility="Collapsed"><base:IconLabel Glyph="&#xE70D;" Text="加载更多"/></Button></ListView.Footer>
+     </ListView>
+     <StackPanel x:Name="SubscribedEmpty" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" Margin="24,0">
+      <FontIcon Glyph="&#xE734;" FontSize="40" Foreground="{ThemeResource SecondaryText}"/>
+      <TextBlock x:Name="SubscribedEmptyText" Text="还没有订阅的播客" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" Foreground="{ThemeResource SecondaryText}" Margin="0,12,0,0"/>
+      <Button x:Name="LoginButton" Click="LoginClick" Style="{StaticResource AccentButton}" HorizontalAlignment="Center" Margin="0,16,0,0" Visibility="Collapsed" Content="登录云音乐"/>
+     </StackPanel>
+    </Grid>
+   </PivotItem>
+  </Pivot>
+ </Grid>
+</base:MusicPage>

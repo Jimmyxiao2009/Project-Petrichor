@@ -1,0 +1,9 @@
+using System;using System.Linq;using System.Collections.Generic;using System.Threading;using System.Threading.Tasks;using Petrichor.Core;using Windows.UI.Xaml;using Windows.UI.Xaml.Controls;using Windows.UI.Xaml.Navigation;using Windows.Storage;namespace Petrichor.App.Pages {public sealed partial class LibraryPage : MusicPage {public LibraryPage(){InitializeComponent();}
+protected override async Task LoadAsync(object p){var recent=await App.History.ReadAsync();Recent.ItemsSource=recent.Select(x=>MusicItem.From(x.Track)).ToList();Avatar.Source=MusicItem.Image(App.Api.CurrentUser?.AvatarUrl);if(App.Api.IsLoggedIn){Nickname.Text=App.Api.CurrentUser.Nickname;Account.Content=new FontIcon {Glyph="\uE8AC",FontSize=20};Windows.UI.Xaml.Automation.AutomationProperties.SetName(Account,"退出登录");Playlists.ItemsSource=(await App.Api.GetMyPlaylistsAsync(30,0,Token)).Select(MusicItem.From).ToList();PlaylistStatus.Text="创建与收藏的歌单";}else{PlaylistStatus.Text="登录后查看你的歌单和收藏。";}}
+private async void AccountClick(object s,RoutedEventArgs e){if(!App.Api.IsLoggedIn){Shell.Current.Navigate(typeof(LoginPage));return;}var dialog=new ContentDialog{Title="退出登录？",Content="最近播放会保留在这台设备上。",PrimaryButtonText="退出",CloseButtonText="取消"};if(await dialog.ShowAsync()==ContentDialogResult.Primary){await App.Api.LogoutAsync();App.NotifyAccountChanged();Shell.Current.Navigate(typeof(LibraryPage),true);}}
+private void DownloadsClick(object s,RoutedEventArgs e)=>Shell.Current.Navigate(typeof(DownloadsPage)); private void OpenCollection(string kind){if(!App.Api.IsLoggedIn)Shell.Current.Navigate(typeof(LoginPage));else Shell.Current.Navigate(typeof(CollectionPage),kind);}
+private void LikesClick(object s,RoutedEventArgs e)=>OpenCollection("likes");private void ArtistsClick(object s,RoutedEventArgs e)=>OpenCollection("artists");private void AlbumsClick(object s,RoutedEventArgs e)=>OpenCollection("albums");}}
+
+
+
+

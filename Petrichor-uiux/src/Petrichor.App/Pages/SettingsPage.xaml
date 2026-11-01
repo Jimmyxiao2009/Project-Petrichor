@@ -1,0 +1,50 @@
+<base:MusicPage x:Class="Petrichor.App.Pages.SettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:base="using:Petrichor.App">
+  <ScrollViewer>
+    <StackPanel Margin="12,8,12,24">
+      <TextBlock Text="设置" Style="{StaticResource PageTitle}" Margin="0" />
+      <TextBlock Text="播放音质" Style="{StaticResource SectionTitle}" />
+      <ComboBox x:Name="Quality" HorizontalAlignment="Stretch" SelectionChanged="QualityChanged" AutomationProperties.Name="播放音质">
+        <ComboBoxItem Content="标准 · 128 kbps" />
+        <ComboBoxItem Content="较高 · 192 kbps" />
+        <ComboBoxItem Content="极高 · 320 kbps" /><ComboBoxItem Content="无损 · FLAC" /><ComboBoxItem Content="Hi-Res · 192 kHz" />
+      </ComboBox>
+      <TextBlock Text="部分歌曲需要会员，音质以实际播放为准。" TextWrapping="Wrap" Foreground="{ThemeResource SecondaryText}" FontSize="12" Margin="0,8,0,0" />
+      <TextBlock Text="播放方式" Style="{StaticResource SectionTitle}" />
+      <ComboBox x:Name="Repeat" HorizontalAlignment="Stretch" SelectionChanged="RepeatChanged" AutomationProperties.Name="播放方式">
+        <ComboBoxItem Content="顺序播放" />
+        <ComboBoxItem Content="列表循环" />
+        <ComboBoxItem Content="单曲循环" />
+      </ComboBox>
+      <ToggleSwitch x:Name="Shuffle" Header="随机播放" Toggled="ShuffleChanged" Margin="0,12,0,0" />
+      <TextBlock Text="睡眠定时" Style="{StaticResource SectionTitle}" />
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+        <TextBlock x:Name="SleepStatus" Text="未开启" FontSize="14" VerticalAlignment="Center" />
+        <Button Grid.Column="1" Click="SleepClick" Style="{StaticResource MetroButton}" Margin="0,0,-12,0">
+          <base:IconLabel Glyph="&#xE708;" Text="设置定时" />
+        </Button>
+      </Grid>
+      <TextBlock Text="也可以在播放页点月亮图标设置。" Foreground="{ThemeResource SecondaryText}" FontSize="12" />
+      <TextBlock Text="下载位置" Style="{StaticResource SectionTitle}" />
+      <TextBlock x:Name="FolderPath" Text="应用内部存储（默认）" FontSize="14" TextWrapping="Wrap" />
+      <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+        <Button Click="ChooseFolderClick" Style="{StaticResource TextButton}" Margin="0,0,24,0">
+          <base:IconLabel Glyph="&#xE8B7;" Text="选择文件夹" />
+        </Button>
+        <Button x:Name="ResetFolder" Click="ResetFolderClick" Style="{StaticResource TextButton}" Visibility="Collapsed">
+          <base:IconLabel Glyph="&#xE777;" Text="恢复默认" />
+        </Button>
+      </StackPanel>
+      <Button x:Name="MigrateFolder" Click="MigrateFolderClick" Style="{StaticResource TextButton}" Visibility="Collapsed" Margin="0,4,0,0">
+        <base:IconLabel Glyph="&#xE895;" Text="迁移已下载歌曲" />
+      </Button>
+      <TextBlock x:Name="FolderHint" Text="可以选择手机或 SD 卡上的任意文件夹。已下载的歌曲会保存在这里。" Foreground="{ThemeResource SecondaryText}" TextWrapping="Wrap" FontSize="12" />
+      <TextBlock Text="歌词与图片缓存" Style="{StaticResource SectionTitle}" />
+      <TextBlock x:Name="CacheStatus" Foreground="{ThemeResource SecondaryText}" FontSize="12" />
+      <Button Click="ClearCacheClick" Style="{StaticResource TextButton}" Margin="0,4,0,0">
+        <base:IconLabel Glyph="&#xE74D;" Text="清理缓存" />
+      </Button>
+      <TextBlock Text="已缓存的歌曲会保留。" Foreground="{ThemeResource SecondaryText}" TextWrapping="Wrap" FontSize="12" />
+    </StackPanel>
+  </ScrollViewer>
+</base:MusicPage>

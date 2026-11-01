@@ -1,0 +1,1 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata"><Application><Assembly Name="*Application*" Dynamic="Required All" /><Assembly Name="Petrichor.Core" Dynamic="Required All" /><Assembly Name="Petrichor.Uwp" Dynamic="Required All" /><Assembly Name="QRCoder" Dynamic="Required All" /></Application></Directives>

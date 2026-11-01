@@ -1,0 +1,177 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Petrichor.Core;
+using Windows.Networking.BackgroundTransfer;
+using Windows.Security.Cryptography;
+using Windows.Security.Cryptography.Core;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
+namespace Petrichor.App {
+ public sealed class DownloadEntry : INotifyPropertyChanged {
+  public Track Track {get;set;} public string FileName {get;set;} public bool Completed {get;set;} public bool Failed {get;set;}
+  [JsonIgnore] public string Title=>Track?.Name;
+  [JsonIgnore] public string Artist=>Track?.ArtistText;
+  [JsonIgnore] public double Percent {get;set;}
+  [JsonIgnore] public bool Paused {get;set;}
+  [JsonIgnore] public string Status=>Completed?"已下载":Failed?"下载失败，点击重试":Paused?"已暂停":Percent>0?"正在下载 · "+(int)Percent+"%":"等待下载";
+  public event PropertyChangedEventHandler PropertyChanged;
+  internal void Update(){foreach(var name in new[]{nameof(Percent),nameof(Paused),nameof(Completed),nameof(Failed),nameof(Status)})PropertyChanged?.Invoke(this,new PropertyChangedEventArgs(name));}
+ }
+ public sealed class OfflineLibrary {
+  private readonly NeteaseClient api;
+  private readonly SemaphoreSlim manifestGate=new SemaphoreSlim(1,1),prepareGate=new SemaphoreSlim(1,1),imageGate=new SemaphoreSlim(3,3);
+  private readonly Dictionary<string,Task<Uri>> images=new Dictionary<string,Task<Uri>>();
+  private readonly Dictionary<long,DownloadOperation> operations=new Dictionary<long,DownloadOperation>();
+  private readonly List<DownloadEntry> downloads=new List<DownloadEntry>();
+  private readonly HttpClient http; private readonly string folderName;
+  private readonly BackgroundTransferGroup group;
+  private StorageFolder music,local,cache,covers,lyrics; private Task initialization;
+  public event EventHandler Changed;
+  public OfflineLibrary(NeteaseClient api,string folderName=null,HttpClient imageHttp=null){this.api=api;this.folderName=folderName;http=imageHttp??new HttpClient {Timeout=TimeSpan.FromSeconds(30)};group=BackgroundTransferGroup.CreateGroup(folderName??"PetrichorMusic");}
+  public Task InitializeAsync()=>initialization??(initialization=InitializeCoreAsync());
+  private async Task InitializeCoreAsync(){
+   var root=folderName==null?ApplicationData.Current.LocalFolder:await ApplicationData.Current.LocalFolder.CreateFolderAsync(folderName,CreationCollisionOption.OpenIfExists);
+   music=await root.CreateFolderAsync("Downloads",CreationCollisionOption.OpenIfExists);
+   local=await root.CreateFolderAsync("LocalMusic",CreationCollisionOption.OpenIfExists);
+   cache=await root.CreateFolderAsync("MusicCache",CreationCollisionOption.OpenIfExists);
+   covers=await cache.CreateFolderAsync("Covers",CreationCollisionOption.OpenIfExists);
+   lyrics=await cache.CreateFolderAsync("Lyrics",CreationCollisionOption.OpenIfExists);
+   var index=await music.TryGetItemAsync("index.json") as StorageFile;
+   if(index!=null){try{downloads.AddRange(JsonConvert.DeserializeObject<List<DownloadEntry>>(await FileIO.ReadTextAsync(index))??new List<DownloadEntry>());}catch(JsonException){}}
+   foreach(var op in await BackgroundDownloader.GetCurrentDownloadsForTransferGroupAsync(group)){
+    var entry=downloads.FirstOrDefault(x=>!x.Completed&&x.FileName==op.ResultFile.Name);
+    if(entry!=null){operations[entry.Track.Id]=op;entry.Failed=false;entry.Paused=op.Progress.Status==BackgroundTransferStatus.PausedByApplication;ObserveAsync(entry,op,false);}
+   }
+   foreach(var entry in downloads.Where(x=>!x.Completed&&!operations.ContainsKey(x.Track.Id)))entry.Failed=true;
+   Changed?.Invoke(this,EventArgs.Empty);
+  }
+  private async Task SaveAsync(){
+   await manifestGate.WaitAsync();
+   try{var pending=await music.CreateFileAsync("index.pending",CreationCollisionOption.ReplaceExisting);await FileIO.WriteTextAsync(pending,JsonConvert.SerializeObject(downloads));await pending.RenameAsync("index.json",NameCollisionOption.ReplaceExisting);}
+   finally{manifestGate.Release();}
+  }
+  public async Task<List<DownloadEntry>> GetDownloadsAsync(){await InitializeAsync();return downloads.ToList();}
+  public async Task<bool> IsDownloadedAsync(long id){await InitializeAsync();return downloads.Any(x=>x.Track.Id==id&&x.Completed);}
+  public async Task DownloadAsync(Track track,AudioQuality quality,CancellationToken ct=default(CancellationToken)){
+   if(track==null||track.Id<=0)throw new InvalidOperationException("Choose an online track");
+   await InitializeAsync();await prepareGate.WaitAsync(ct);
+   try{
+    var entry=downloads.FirstOrDefault(x=>x.Track.Id==track.Id);
+    if(entry?.Completed==true||operations.ContainsKey(track.Id))return;
+    var stream=await api.GetStreamAsync(track.Id,quality,ct);
+    if(stream.IsPreview)throw new MusicApiException(460,"Preview only");
+    ct.ThrowIfCancellationRequested();
+    string format=(stream.Format??"mp3").ToLowerInvariant();
+    string extension=new[]{"mp3","flac","aac","m4a","ogg","wav"}.Contains(format)?"."+format:".mp3";
+    var destination=await music.CreateFileAsync(track.Id+extension,CreationCollisionOption.ReplaceExisting);
+    if(entry==null){entry=new DownloadEntry {Track=track};downloads.Add(entry);}
+    entry.FileName=destination.Name;entry.Completed=false;entry.Failed=false;entry.Percent=0;entry.Paused=false;
+    var operation=new BackgroundDownloader {TransferGroup=group}.CreateDownload(stream.Url,destination);
+    operations[track.Id]=operation;
+    await SaveAsync();entry.Update();Changed?.Invoke(this,EventArgs.Empty);ObserveAsync(entry,operation,true);
+   }finally{prepareGate.Release();}
+  }
+  private async void ObserveAsync(DownloadEntry entry,DownloadOperation operation,bool start){
+   try{
+    var progress=new Progress<DownloadOperation>(op=>{entry.Percent=op.Progress.TotalBytesToReceive==0?0:100d*op.Progress.BytesReceived/op.Progress.TotalBytesToReceive;entry.Paused=op.Progress.Status==BackgroundTransferStatus.PausedByApplication;entry.Update();});
+    if(start)await operation.StartAsync().AsTask(progress);else await operation.AttachAsync().AsTask(progress);
+    var response=operation.GetResponseInformation();
+    if(response.StatusCode<200||response.StatusCode>=300||(await operation.ResultFile.GetBasicPropertiesAsync()).Size==0)throw new InvalidOperationException("Invalid download response");
+    entry.Completed=true;entry.Failed=false;entry.Percent=100;entry.Track.LocalFilePath=operation.ResultFile.Path;
+   }catch(Exception error){entry.Failed=true;entry.Completed=false;await App.LogAsync(error);}
+   finally{
+    operations.Remove(entry.Track.Id);entry.Update();
+    try{await SaveAsync();}catch(Exception error){await App.LogAsync(error);}
+    Changed?.Invoke(this,EventArgs.Empty);
+   }
+   if(entry.Completed){try{await GetLyricsAsync(entry.Track);await GetCoverAsync(entry.Track.Album.CoverUrl);}catch(Exception error){await App.LogAsync(error);}}
+  }
+  public void TogglePause(DownloadEntry entry){
+   DownloadOperation op;if(!operations.TryGetValue(entry.Track.Id,out op))return;
+   if(op.Progress.Status==BackgroundTransferStatus.PausedByApplication){op.Resume();entry.Paused=false;}
+   else if(op.Progress.Status==BackgroundTransferStatus.Running){op.Pause();entry.Paused=true;}
+   entry.Update();
+  }
+  public async Task<StorageFile> FindAudioAsync(Track track){
+   await InitializeAsync();
+   if(!string.IsNullOrWhiteSpace(track.LocalFilePath)){try{return await StorageFile.GetFileFromPathAsync(track.LocalFilePath);}catch(System.IO.FileNotFoundException){}}
+   var entry=downloads.FirstOrDefault(x=>x.Track.Id==track.Id&&x.Completed);
+   return entry==null?null:await music.TryGetItemAsync(entry.FileName) as StorageFile;
+  }
+  private static string Hash(string value){var p=HashAlgorithmProvider.OpenAlgorithm(HashAlgorithmNames.Sha256);return CryptographicBuffer.EncodeToHexString(p.HashData(CryptographicBuffer.ConvertStringToBinary(value,BinaryStringEncoding.Utf8)));}
+  public Task<Uri> GetCoverAsync(string url){
+   Uri uri;if(!Uri.TryCreate(url,UriKind.Absolute,out uri))return Task.FromResult<Uri>(null);
+   if(uri.Scheme=="ms-appdata"||uri.Scheme=="ms-appx")return Task.FromResult(uri);
+   if(uri.Scheme!="http"&&uri.Scheme!="https")return Task.FromResult<Uri>(null);
+   Task<Uri> task;lock(images){if(!images.TryGetValue(url,out task))images[url]=task=LoadCoverAsync(url);}return task;
+  }
+  private async Task<Uri> LoadCoverAsync(string url){
+   await InitializeAsync();string name=Hash(url)+".img";
+   var found=await covers.TryGetItemAsync(name) as StorageFile;if(found!=null)return CoverUri(name);
+   await imageGate.WaitAsync();
+   try{
+    found=await covers.TryGetItemAsync(name) as StorageFile;if(found!=null)return CoverUri(name);
+    using(var response=await http.GetAsync(url,HttpCompletionOption.ResponseHeadersRead)){
+     response.EnsureSuccessStatusCode();if(response.Content.Headers.ContentLength>8*1024*1024)throw new InvalidOperationException("Image too large");
+     var bytes=await response.Content.ReadAsByteArrayAsync();if(bytes.Length==0||bytes.Length>8*1024*1024)throw new InvalidOperationException("Invalid image");
+     var pending=await covers.CreateFileAsync(name+".pending",CreationCollisionOption.ReplaceExisting);await FileIO.WriteBytesAsync(pending,bytes);await pending.RenameAsync(name,NameCollisionOption.ReplaceExisting);
+    }
+    return CoverUri(name);
+   }catch{lock(images){images.Remove(url);}return null;}finally{imageGate.Release();}
+  }
+  private Uri CoverUri(string name)=>new Uri("ms-appdata:///local/"+(folderName==null?"":folderName+"/")+"MusicCache/Covers/"+name);
+  public async Task<Lyrics> GetLyricsAsync(Track track,CancellationToken ct=default(CancellationToken)){
+   await InitializeAsync();var existing=await lyrics.TryGetItemAsync(track.Id+".json") as StorageFile;
+   if(existing!=null){try{return JsonConvert.DeserializeObject<Lyrics>(await FileIO.ReadTextAsync(existing))??EmptyLyrics();}catch(JsonException){}}
+   if(track.Id<=0)return EmptyLyrics();
+   var result=await api.GetLyricsAsync(track.Id,ct);ct.ThrowIfCancellationRequested();
+   var pending=await lyrics.CreateFileAsync(track.Id+".pending",CreationCollisionOption.ReplaceExisting);await FileIO.WriteTextAsync(pending,JsonConvert.SerializeObject(result));await pending.RenameAsync(track.Id+".json",NameCollisionOption.ReplaceExisting);return result;
+  }
+  private static Lyrics EmptyLyrics()=>new Lyrics {Lines=new List<LyricLine>(),TranslatedLines=new List<LyricLine>()};
+  public async Task ImportLyricsAsync(Track track,StorageFile file){
+   await InitializeAsync();var text=await FileIO.ReadTextAsync(file);var result=new Lyrics {Original=text,Lines=LrcParser.Parse(text),TranslatedLines=new List<LyricLine>()};
+   var target=await lyrics.CreateFileAsync(track.Id+".json",CreationCollisionOption.ReplaceExisting);await FileIO.WriteTextAsync(target,JsonConvert.SerializeObject(result));
+  }
+  public async Task<List<Track>> ImportAsync(IEnumerable<StorageFile> files){
+   await InitializeAsync();var added=new List<Track>();
+   foreach(var source in files){
+    var file=await source.CopyAsync(local,source.Name,NameCollisionOption.GenerateUniqueName);
+    var p=await file.Properties.GetMusicPropertiesAsync();
+    var track=new Track {Id=-Math.Abs(DateTimeOffset.UtcNow.Ticks),Name=string.IsNullOrWhiteSpace(p.Title)?file.DisplayName:p.Title,LocalFilePath=file.Path,DurationMs=(int)Math.Min(int.MaxValue,p.Duration.TotalMilliseconds),Artists=new List<Artist>{new Artist{Name=string.IsNullOrWhiteSpace(p.Artist)?"未知歌手":p.Artist}},Album=new Album{Name=string.IsNullOrWhiteSpace(p.Album)?"本地音乐":p.Album}};
+    using(var thumbnail=await file.GetThumbnailAsync(ThumbnailMode.MusicView,360,ThumbnailOptions.UseCurrentScale)){
+     if(thumbnail!=null&&thumbnail.Type==ThumbnailType.Image){
+      string name="local-"+Math.Abs(track.Id)+".jpg";var cover=await covers.CreateFileAsync(name,CreationCollisionOption.ReplaceExisting);
+      using(var output=await cover.OpenAsync(FileAccessMode.ReadWrite)){await Windows.Storage.Streams.RandomAccessStream.CopyAndCloseAsync(thumbnail.GetInputStreamAt(0),output.GetOutputStreamAt(0));}
+      track.Album.CoverUrl=CoverUri(name).ToString();
+     }
+    }
+    var metadata=await local.CreateFileAsync(file.Name+".json",CreationCollisionOption.ReplaceExisting);await FileIO.WriteTextAsync(metadata,JsonConvert.SerializeObject(track));added.Add(track);
+   }
+   Changed?.Invoke(this,EventArgs.Empty);return added;
+  }
+  public async Task<List<Track>> GetLocalSongsAsync(){
+   await InitializeAsync();var tracks=downloads.Where(x=>x.Completed).Select(x=>x.Track).ToList();
+   foreach(var file in await local.GetFilesAsync())if(file.Name.EndsWith(".json",StringComparison.OrdinalIgnoreCase)){
+    try{var t=JsonConvert.DeserializeObject<Track>(await FileIO.ReadTextAsync(file));if(t!=null)tracks.Add(t);}catch(JsonException){}
+   }
+   return tracks.OrderBy(t=>t.Name).ToList();
+  }
+  public async Task<ulong> CacheSizeAsync(){await InitializeAsync();ulong size=0;foreach(var dir in new[]{covers,lyrics})foreach(var file in await dir.GetFilesAsync())size+=(await file.GetBasicPropertiesAsync()).Size;return size;}
+  public async Task ClearCacheAsync(){
+   await InitializeAsync();
+   // Imported artwork and local lyrics are user data, just like imported/downloaded music.
+   foreach(var dir in new[]{covers,lyrics})foreach(var file in await dir.GetFilesAsync())if(!file.Name.StartsWith("local-",StringComparison.OrdinalIgnoreCase)&&!file.Name.StartsWith("-",StringComparison.Ordinal))await file.DeleteAsync();
+   lock(images){images.Clear();}
+  }
+ }
+}
+
+
+
+

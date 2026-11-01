@@ -1,0 +1,3 @@
+using System;using System.Linq;using System.Collections.Generic;using System.Threading;using System.Threading.Tasks;using Petrichor.Core;using Windows.UI.Xaml;using Windows.UI.Xaml.Controls;using Windows.UI.Xaml.Navigation;using Windows.Storage;namespace Petrichor.App.Pages {public sealed partial class QueuePage : MusicPage {public QueuePage(){InitializeComponent();}
+public int TrackCount=>Tracks.Items.Count;
+protected override Task LoadAsync(object p){Tracks.ItemsSource=App.Playback.Queue.Tracks.Select(MusicItem.From).ToList();Tracks.SelectedIndex=App.Playback.Queue.Index;Status.Text=Tracks.Items.Count==0?"还没有歌曲，搜索或打开一张专辑开始播放。":Tracks.Items.Count+" 首歌曲 · 点击切换";return Task.FromResult(0);}}}

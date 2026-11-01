@@ -1,0 +1,32 @@
+<base:MusicPage x:Class="Petrichor.App.Pages.SearchPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:base="using:Petrichor.App">
+  <Grid Margin="0,8,0,8">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Height="40">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <!-- 15063 的 TextBox 模板不响应 VerticalContentAlignment，用顶部内边距让文字在 40 高度内居中 -->
+      <TextBox x:Name="Query" Height="40" Padding="10,9,6,0" PlaceholderText="歌曲、歌手、专辑或歌单" KeyDown="QueryKeyDown" AutomationProperties.Name="搜索关键词" />
+      <Button Grid.Column="1" Click="SubmitClick" Style="{StaticResource AccentButton}" Height="40" MinWidth="76" Padding="14,0" Margin="8,0,0,0" VerticalAlignment="Stretch">
+        <base:IconLabel Glyph="&#xE721;" Text="搜索" />
+      </Button>
+    </Grid>
+    <TextBlock Grid.Row="1" x:Name="Status" Text="输入关键词，寻找下一首喜欢的音乐。" TextWrapping="Wrap" Foreground="{ThemeResource SecondaryText}" FontSize="12" Margin="0,8,0,0" />
+    <Pivot Grid.Row="2" x:Name="Kind" Style="{StaticResource SubPivot}" SelectedIndex="0" SelectionChanged="KindChanged">
+      <PivotItem Header="单曲"><ListView x:Name="Results0" ItemTemplate="{StaticResource MusicRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="ResultClick" /></PivotItem>
+      <PivotItem Header="歌单"><ListView x:Name="Results1" ItemTemplate="{StaticResource MusicRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="ResultClick" /></PivotItem>
+      <PivotItem Header="歌手"><ListView x:Name="Results2" ItemTemplate="{StaticResource MusicRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="ResultClick" /></PivotItem>
+      <PivotItem Header="专辑"><ListView x:Name="Results3" ItemTemplate="{StaticResource MusicRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="ResultClick" /></PivotItem>
+      <PivotItem Header="播客"><ListView x:Name="Results4" ItemTemplate="{StaticResource PodcastRowTemplate}" SelectionMode="None" IsItemClickEnabled="True" ItemClick="ResultClick" /></PivotItem>
+    </Pivot>
+    <Button Grid.Row="3" x:Name="More" Click="MoreClick" Visibility="Collapsed" Style="{StaticResource FooterButton}">
+      <base:IconLabel Glyph="&#xE70D;" Text="加载更多" />
+    </Button>
+  </Grid>
+</base:MusicPage>
